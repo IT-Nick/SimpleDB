@@ -2,7 +2,9 @@
 #include <iostream>
 #include <sstream>
 #include <set>
+#include <map>
 
+using std::map;
 using std::set;
 using std::stringstream;
 using std::string;
@@ -51,6 +53,8 @@ std::ostream& operator<<(std::ostream& output, Date& date) {
 }
 
 class Database {
+private:
+    map<Date, set<string>> db;
 public:
     void AddEvent(const Date& date, const string& event);
     bool DeleteEvent(const Date& date, const string& event);
