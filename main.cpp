@@ -3,13 +3,17 @@
 #include <sstream>
 #include <set>
 #include <map>
+#include <iomanip>
 
 using std::map;
 using std::set;
 using std::stringstream;
+using std::setw;
+using std::setfill;
 using std::string;
 using std::cout;
 using std::cin;
+using std::endl;
 
 class Date {
 private:
@@ -46,9 +50,10 @@ std::istream& operator>>(std::istream& input, Date& date) {
     return input;
 }
 
-std::ostream& operator<<(std::ostream& output, Date& date) {
-    int year, month, day;
-    output << date.GetYear() << '-' << date.GetMonth() << '-' << date.GetDay();
+std::ostream& operator<<(std::ostream& output, const set<string>& events) {
+    for(const auto& event : events) {
+        output << event << endl;
+    }
     return output;
 }
 
@@ -56,14 +61,42 @@ class Database {
 private:
     map<Date, set<string>> db;
 public:
-    void AddEvent(const Date& date, const string& event);
-    bool DeleteEvent(const Date& date, const string& event);
-    int  DeleteDate(const Date& date);
+    void AddEvent(const Date& date, const string& event) {
+        db[date].insert(event);
+    }
+    bool DeleteEvent(const Date& date, const string& event) {
+        if (db.count(date) && db[date].count(event)) {
+            db[date].erase(event);
+            return true;
+        }
+        return false;
+    }
+    size_t  DeleteDate(const Date& date) {
+        size_t eCount = 0;
+        if(db.count(date)) {
+            eCount = db[date].size();
+        }
+        db.erase(date);
+        return eCount;
+    }
 
-    string Find(const Date& date) const;
+    set<string> Find(const Date& date) const {
+        set<string> events;
+        for(const auto &event : db.at(date)) {
+            events.insert(event);
+        }
+        return events;
+    }
 
-    set<string> Print() const {
-        cout <<
+    void Print() const {
+        for(const auto& i : db) {
+            for(const auto& j : i.second) {
+                cout << setfill('0');
+                cout << setw(4) << i.first.GetYear() << '-' << setw(2)
+                << i.first.GetMonth() << '-' << setw(2) << i.first.GetDay()
+                << ' ' << j << endl;
+            }
+        }
     }
 };
 
@@ -72,8 +105,9 @@ int main() {
 
     string command;
     while (getline(cin, command)) {
-        stringstream ss;
-        ss << command;
+
+        stringstream ss(command);
+
         string cmd;
         ss >> cmd;
         if(cmd == "Add") {
@@ -100,7 +134,6 @@ int main() {
             Date date;
             ss >> date;
             db.Print();
-            cout << cmd << " " << date;
         }
     }
 
