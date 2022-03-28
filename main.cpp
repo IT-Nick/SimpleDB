@@ -4,6 +4,7 @@
 #include <set>
 #include <map>
 #include <iomanip>
+#include <stdexcept>
 
 using std::map;
 using std::set;
@@ -23,9 +24,15 @@ private:
 public:
     void SetDate(int new_year, int new_month, int new_day) {
         year = new_year;
+        if (new_month > 12 || new_month < 1) {
+            throw std::logic_error("Month value is invalid: " + std::to_string(new_month));
+        }
         month = new_month;
+        if (new_day > 31 || new_day < 1) {
+            throw std::logic_error("Day value is invalid: " + std::to_string(new_day));
+        }
         day = new_day;
-    };
+    }
     int GetYear() const {
         return year;
     }
@@ -48,12 +55,28 @@ bool operator<(const Date& lhs, const Date& rhs) {
 }
 
 std::istream& operator>>(std::istream& input, Date& date) {
-    int year, month, day;
-    input >> year;
-    input.ignore(1);
-    input >> month;
-    input.ignore(1);
-    input >> day;
+    string dateStr;
+    input >> dateStr;
+    stringstream ss(dateStr);
+    bool ok = true;
+    int year;
+    ok = ok && (ss >> year);
+    ok = ok && (ss.peek() == '-');
+    ss.ignore(1);
+
+    int month;
+    ok = ok && (ss >> month);
+    ok = ok && (ss.peek() == '-');
+    ss.ignore(1);
+
+    int day;
+    ok = ok && (ss >> day);
+    ok = ok && ss.eof();
+
+    if (!ok) {
+        throw std::logic_error("Wrong date format: " + dateStr);
+    }
+
     date.SetDate(year, month, day);
     return input;
 }
@@ -113,39 +136,41 @@ int main() {
 
     string command;
     while (getline(cin, command)) {
-
         stringstream ss(command);
-
         string cmd;
-        ss >> cmd;
-        if(cmd == "Add") {
-            Date date;
-            string event;
-            ss >> date;
-            ss >> event;
-            db.AddEvent(date, event);
-        } else if (cmd == "Find") {
-            Date date;
-            ss >> date;
-            cout << db.Find(date);
-        } else if (cmd == "Del") {
-            Date date;
-            ss >> date;
-            string event;
-            ss >> event;
-            if(event.empty()) {
-                cout << "Deleted " << db.DeleteDate(date) << " events" << endl;
-            } else {
-                if(db.DeleteEvent(date, event)) {
-                    cout << "Deleted successfully" << endl;
+        try {
+            ss >> cmd;
+            if (cmd == "Add") {
+                Date date;
+                string event;
+                ss >> date;
+                ss >> event;
+                db.AddEvent(date, event);
+            } else if (cmd == "Find") {
+                Date date;
+                ss >> date;
+                cout << db.Find(date);
+            } else if (cmd == "Del") {
+                Date date;
+                ss >> date;
+                string event;
+                ss >> event;
+                if (event.empty()) {
+                    cout << "Deleted " << db.DeleteDate(date) << " events" << endl;
                 } else {
-                    cout << "Event not found" << endl;
+                    if (db.DeleteEvent(date, event)) {
+                        cout << "Deleted successfully" << endl;
+                    } else {
+                        cout << "Event not found" << endl;
+                    }
                 }
+            } else if (cmd == "Print") {
+                Date date;
+                ss >> date;
+                db.Print();
             }
-        } else if (cmd == "Print") {
-            Date date;
-            ss >> date;
-            db.Print();
+        } catch (const std::exception& e) {
+            cout << e.what() << endl;
         }
     }
 
