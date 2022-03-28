@@ -37,7 +37,15 @@ public:
     }
 };
 
-bool operator<(const Date& lhs, const Date& rhs);
+bool operator<(const Date& lhs, const Date& rhs) {
+    if (lhs.GetYear() == rhs.GetYear()) {
+        if (lhs.GetMonth() == rhs.GetMonth()) {
+            return lhs.GetDay() < rhs.GetDay();
+        }
+        return lhs.GetMonth() < rhs.GetMonth();
+    }
+    return lhs.GetYear() < rhs.GetYear();
+}
 
 std::istream& operator>>(std::istream& input, Date& date) {
     int year, month, day;
@@ -126,9 +134,13 @@ int main() {
             string event;
             ss >> event;
             if(event.empty()) {
-                db.DeleteDate(date);
+                cout << "Deleted " << db.DeleteDate(date) << " events" << endl;
             } else {
-                db.DeleteEvent(date, event);
+                if(db.DeleteEvent(date, event)) {
+                    cout << "Deleted successfully" << endl;
+                } else {
+                    cout << "Event not found" << endl;
+                }
             }
         } else if (cmd == "Print") {
             Date date;
