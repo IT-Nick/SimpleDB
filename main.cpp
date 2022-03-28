@@ -1,19 +1,23 @@
+// Реализуйте функции и методы классов и при необходимости добавьте свои
 #include <iostream>
 #include <sstream>
-#include <map>
-#include <set>
+
+using std::stringstream;
+using std::string;
+using std::cout;
+using std::cin;
 
 class Date {
+private:
+    int year = 0;
+    int month = 0;
+    int day = 0;
 public:
-    Date(std::string date) {
-        std::stringstream ss;
-        ss << date;
-        ss >> year;
-        ss.ignore(1);
-        ss >> month;
-        ss.ignore(1);
-        ss >> day;
-    }
+    void SetDate(int new_year, int new_month, int new_day) {
+        year = new_year;
+        month = new_month;
+        day = new_day;
+    };
     int GetYear() const {
         return year;
     }
@@ -23,88 +27,74 @@ public:
     int GetDay() const {
         return day;
     }
-private:
-    int year;
-    int month;
-    int day;
 };
 
-bool operator < (const Date& lhs, const Date& rhs) {
-    return lhs.GetYear() < rhs.GetYear();
+bool operator<(const Date& lhs, const Date& rhs);
+
+std::istream& operator>>(std::istream& input, Date& date) {
+    int year, month, day;
+    input >> year;
+    input.ignore(1);
+    input >> month;
+    input.ignore(1);
+    input >> day;
+    date.SetDate(year, month, day);
+    return input;
 }
 
-std::ostream& operator << (std::ostream& os, const std::set<std::string>& s) {
-    for(auto it = s.begin(); it != s.end(); ++it) {
-        os << *it;
-    }
-    return os;
+std::ostream& operator<<(std::ostream& output, Date& date) {
+    int year, month, day;
+    output << date.GetYear() << '-' << date.GetMonth() << '-' << date.GetDay();
+    return output;
 }
-
 
 class Database {
 public:
-    void AddEvent(const Date& date, const std::string& event) {
-        db[date].insert(event);
+    void AddEvent(const Date& date, const string& event);
+    bool DeleteEvent(const Date& date, const string& event);
+    int  DeleteDate(const Date& date);
+
+    string Find(const Date& date) const;
+
+    void Print() const {
+        cout <<
     }
-    bool DeleteEvent(const Date& date, const std::string& event);
-    int DeleteDate(const Date& date);
-
-    void Find(const Date& date) const;
-
-    std::map<Date, std::set<std::string>> Print() const {
-        return db;
-    }
-private:
-    std::map<Date, std::set<std::string>> db;
-};
-
-enum class RequestEvents {
-    ADD,
-    DEL,
-    FIND,
-    PRINT
 };
 
 int main() {
-    int request_num;
-    std::cin >> request_num;
-    RequestEvents request;
-    request = static_cast<RequestEvents>(request_num);
     Database db;
-    std::string command;
-    while (getline(std::cin, command)) {
-        switch (request) {
-            //добавление события
-            case RequestEvents::ADD: {
-                std::string input, event;
-                std::cin >> input >> event;
-                Date date(input);
-                db.AddEvent(date, event);
-                break;
+
+    string command;
+    while (getline(cin, command)) {
+        stringstream ss;
+        ss << command;
+        string cmd;
+        ss >> cmd;
+        if(cmd == "Add") {
+            Date date;
+            string event;
+            ss >> date;
+            ss >> event;
+            db.AddEvent(date, event);
+        } else if (cmd == "Find") {
+            Date date;
+            ss >> date;
+            cout << db.Find(date);
+        } else if (cmd == "Del") {
+            Date date;
+            ss >> date;
+            string event;
+            ss >> event;
+            if(event.empty()) {
+                db.DeleteDate(date);
+            } else {
+                db.DeleteEvent(date, event);
             }
-                //удаление события
-            case RequestEvents::DEL: {
-                int date, events;
-                std::cin >> date >> events;
-                break;
-            }
-                //поиск событий за конкретную дату
-            case RequestEvents::FIND: {
-                int date;
-                std::cin >> date;
-                break;
-            }
-                //печать всех событий за все даты
-            case RequestEvents::PRINT: {
-                std::map<Date, std::set<std::string>> s = db.Print();
-                for(auto it = s.begin(); it != s.end(); ++it) {
-                    std::cout << it->first.GetYear() << " "
-                    << it->first.GetMonth() << " "
-                    << it->first.GetDay() << " "
-                    << it->second << " ";
-                }
-                break;
-            }
+        } else if (cmd == "Print") {
+            Date date;
+            ss >> date;
+            db.Print();
+            cout << cmd << " " << date;
         }
     }
 
