@@ -1,7 +1,9 @@
 // Реализуйте функции и методы классов и при необходимости добавьте свои
 #include <iostream>
 #include <sstream>
+#include <set>
 
+using std::set;
 using std::stringstream;
 using std::string;
 using std::cout;
@@ -56,7 +58,7 @@ public:
 
     string Find(const Date& date) const;
 
-    void Print() const {
+    set<string> Print() const {
         cout <<
     }
 };
