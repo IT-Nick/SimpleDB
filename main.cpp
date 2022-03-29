@@ -60,7 +60,7 @@ std::istream& operator>>(std::istream& input, Date& date) {
     stringstream ss(dateStr);
     bool ok = true;
     int year;
-    ok = ok && (ss >> year);
+    ok = bool(ss >> year);
     ok = ok && (ss.peek() == '-');
     ss.ignore(1);
 
@@ -165,8 +165,6 @@ int main() {
                     }
                 }
             } else if (cmd == "Print") {
-                Date date;
-                ss >> date;
                 db.Print();
             }
         } catch (const std::exception& e) {
