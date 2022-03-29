@@ -18,9 +18,9 @@ using std::endl;
 
 class Date {
 private:
-    int year = 0;
-    int month = 0;
-    int day = 0;
+    int year;
+    int month;
+    int day;
 public:
     void SetDate(int new_year, int new_month, int new_day) {
         year = new_year;
@@ -102,7 +102,7 @@ public:
         }
         return false;
     }
-    size_t  DeleteDate(const Date& date) {
+    size_t DeleteDate(const Date& date) {
         size_t eCount = 0;
         if(db.count(date)) {
             eCount = db[date].size();
@@ -113,8 +113,10 @@ public:
 
     set<string> Find(const Date& date) const {
         set<string> events;
-        for(const auto &event : db.at(date)) {
-            events.insert(event);
+        if(db.count(date)) {
+            for (const auto &event: db.at(date)) {
+                events.insert(event);
+            }
         }
         return events;
     }
@@ -122,10 +124,12 @@ public:
     void Print() const {
         for(const auto& i : db) {
             for(const auto& j : i.second) {
-                cout << setfill('0');
-                cout << setw(4) << i.first.GetYear() << '-' << setw(2)
-                << i.first.GetMonth() << '-' << setw(2) << i.first.GetDay()
-                << ' ' << j << endl;
+                if(i.first.GetYear() != -1) {
+                    cout << setfill('0');
+                    cout << setw(4) << i.first.GetYear() << '-' << setw(2)
+                         << i.first.GetMonth() << '-' << setw(2) << i.first.GetDay()
+                         << ' ' << j << endl;
+                }
             }
         }
     }
@@ -166,6 +170,8 @@ int main() {
                 }
             } else if (cmd == "Print") {
                 db.Print();
+            }  else if (!cmd.empty()) {
+                throw std::logic_error("Unknown command: " + command);
             }
         } catch (const std::exception& e) {
             cout << e.what() << endl;
