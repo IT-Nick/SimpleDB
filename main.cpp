@@ -1,4 +1,3 @@
-// Реализуйте функции и методы классов и при необходимости добавьте свои
 #include <iostream>
 #include <sstream>
 #include <set>
